@@ -1,6 +1,5 @@
-// lib/database.ts
-import { push, ref, remove, set } from "firebase/database";
-import { database } from "./firebase.config";
+import { database } from "@/firebase/firebase.config";
+import { get, push, ref, remove, set } from "firebase/database";
 
 /**
  * Fonction pour ajouter des données à une route spécifique dans la Firebase Realtime Database.
@@ -50,6 +49,28 @@ export const deleteData = async (route: string, id: string): Promise<void> => {
     await remove(itemRef); // Supprime l'élément de la base de données
   } catch (error) {
     console.error("Error deleting data:", error);
+    throw error; // Relance l'erreur pour être gérée par l'appelant
+  }
+};
+
+/**
+ * Fonction pour récupérer toutes les données d'un dossier spécifique dans la Firebase Realtime Database.
+ * @param route - La route du dossier dont les données doivent être récupérées
+ * @returns Une promesse résolue avec les données récupérées ou une erreur en cas d'échec
+ */
+export const getAllData = async (route: string): Promise<any> => {
+  try {
+    const dataRef = ref(database, route);
+    const snapshot = await get(dataRef); // Récupère les données à partir de la base de données
+    if (snapshot.exists()) {
+      console.log("Data retrieved successfully:", snapshot.val());
+      return snapshot.val(); // Retourne les données si elles existent
+    } else {
+      console.log("No data available at route:", route);
+      return null; // Retourne null si aucune donnée n'existe à cette route
+    }
+  } catch (error) {
+    console.error("Error getting data:", error);
     throw error; // Relance l'erreur pour être gérée par l'appelant
   }
 };
