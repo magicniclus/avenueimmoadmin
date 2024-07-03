@@ -21,7 +21,7 @@ export default function RootLayout({
     <StoreProvider>
       <html lang="fr">
         <head>
-          <link rel="icon" href="/logo.png" sizes="any" />
+          <link rel="icon" href="/favicon-bg.png" sizes="any" />
         </head>
         <body className={inter.className}>{children}</body>
         <GoogleTagManager gtmId={GTM} />
