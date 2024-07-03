@@ -15,10 +15,8 @@ import {
 } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import {
-  ArrowTrendingUpIcon,
   Bars3Icon,
   Cog6ToothIcon,
-  EnvelopeIcon,
   HomeIcon,
   UserIcon,
   XMarkIcon,
@@ -36,27 +34,15 @@ const SideBarLayout = ({ children }: { children: React.ReactNode }) => {
 
   const [navigation, setNavigation] = useState([
     {
-      name: "Tableau de bord",
-      href: "/espace-pro/tableau-de-bord",
+      name: "Partenaires",
+      href: "/espace-administrateur/partenaires",
       icon: HomeIcon,
       current: false,
     },
     {
       name: "Leads",
-      href: "/espace-pro/leads",
+      href: "/espace-administrateur/leads",
       icon: UserIcon,
-      current: false,
-    },
-    {
-      name: "Performances",
-      href: "/espace-pro/performances",
-      icon: ArrowTrendingUpIcon,
-      current: false,
-    },
-    {
-      name: "Contact",
-      href: "/espace-pro/contact",
-      icon: EnvelopeIcon,
       current: false,
     },
   ]);
