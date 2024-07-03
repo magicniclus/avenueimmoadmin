@@ -50,7 +50,7 @@ const ConnexionForm: React.FC<ConnexionFormProps> = ({ title, href }) => {
 
     try {
       await signIn(email, password);
-      router.push(href || "/espace-administrateur/tableau-de-bord");
+      router.push(href || "/espace-administrateur/partenaires");
       // Redirection ou autres actions après connexion réussie
     } catch (error) {
       setError("Échec de la connexion. Veuillez vérifier vos informations.");
@@ -79,7 +79,7 @@ const ConnexionForm: React.FC<ConnexionFormProps> = ({ title, href }) => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="px-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                className="px-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
               />
             </div>
           </div>
@@ -95,7 +95,7 @@ const ConnexionForm: React.FC<ConnexionFormProps> = ({ title, href }) => {
               <div className="text-sm">
                 <a
                   href="/changer-le-mot-de-passe"
-                  className="font-semibold text-indigo-600 hover:text-indigo-500"
+                  className="font-semibold text-blue-600 hover:text-blue-500"
                 >
                   Mot de passe oublié ?
                 </a>
@@ -110,14 +110,14 @@ const ConnexionForm: React.FC<ConnexionFormProps> = ({ title, href }) => {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="px-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                className="px-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
               />
             </div>
           </div>
           <div>
             <button
               type="submit"
-              className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              className="flex w-full justify-center rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
             >
               Se connecter
             </button>
@@ -128,7 +128,7 @@ const ConnexionForm: React.FC<ConnexionFormProps> = ({ title, href }) => {
           Pas encore inscrit ?{" "}
           <a
             href="/"
-            className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500"
+            className="font-semibold leading-6 text-blue-600 hover:text-blue-500"
           >
             Publiez votre projet
           </a>
