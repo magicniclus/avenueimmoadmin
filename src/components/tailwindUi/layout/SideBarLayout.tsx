@@ -2,7 +2,7 @@
 
 "use client";
 
-import { isUserLoggedIn, logOut } from "@/firebase/auth"; // Importez la fonction logOut depuis son chemin
+import { getUserInfo, isUserLoggedIn, logOut } from "@/firebase/auth"; // Importez la fonction logOut depuis son chemin
 import {
   Dialog,
   DialogPanel,
@@ -13,18 +13,17 @@ import {
   Transition,
   TransitionChild,
 } from "@headlessui/react";
+import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import {
-  ChevronDownIcon,
-  MagnifyingGlassIcon,
-} from "@heroicons/react/20/solid";
-import {
+  ArrowTrendingUpIcon,
   Bars3Icon,
-  BellIcon,
   Cog6ToothIcon,
+  EnvelopeIcon,
   HomeIcon,
+  UserIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 function classNames(...classes: string[]) {
@@ -32,14 +31,36 @@ function classNames(...classes: string[]) {
 }
 
 const SideBarLayout = ({ children }: { children: React.ReactNode }) => {
-  const navigation = [
-    { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
-    // { name: "Team", href: "#", icon: UsersIcon, current: false },
-    // { name: "Projects", href: "#", icon: FolderIcon, current: false },
-    // { name: "Calendar", href: "#", icon: CalendarIcon, current: false },
-    // { name: "Documents", href: "#", icon: DocumentDuplicateIcon, current: false },
-    // { name: "Reports", href: "#", icon: ChartPieIcon, current: false },
-  ];
+  const router = useRouter();
+  const pathName = usePathname();
+
+  const [navigation, setNavigation] = useState([
+    {
+      name: "Tableau de bord",
+      href: "/espace-pro/tableau-de-bord",
+      icon: HomeIcon,
+      current: false,
+    },
+    {
+      name: "Leads",
+      href: "/espace-pro/leads",
+      icon: UserIcon,
+      current: false,
+    },
+    {
+      name: "Performances",
+      href: "/espace-pro/performances",
+      icon: ArrowTrendingUpIcon,
+      current: false,
+    },
+    {
+      name: "Contact",
+      href: "/espace-pro/contact",
+      icon: EnvelopeIcon,
+      current: false,
+    },
+  ]);
+
   const teams = [
     { id: 1, name: "Heroicons", href: "#", initial: "H", current: false },
     // { id: 2, name: "Tailwind Labs", href: "#", initial: "T", current: false },
@@ -52,8 +73,17 @@ const SideBarLayout = ({ children }: { children: React.ReactNode }) => {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(true);
+  const [letters, setLetters] = useState<string>(""); // Provide a default value for letters
 
-  const router = useRouter();
+  useEffect(() => {
+    const currentPath = pathName;
+    setNavigation((prevNavigation) =>
+      prevNavigation.map((item) => ({
+        ...item,
+        current: item.href === currentPath,
+      }))
+    );
+  }, [pathName]);
 
   const handleSignOut = async () => {
     try {
@@ -70,7 +100,7 @@ const SideBarLayout = ({ children }: { children: React.ReactNode }) => {
       const loggedIn = await isUserLoggedIn();
       if (!loggedIn) {
         await setIsLoaded(false);
-        router.push("/");
+        router.push("/espace-pro/connexion");
       }
       setIsLoaded(false);
     };
@@ -78,14 +108,28 @@ const SideBarLayout = ({ children }: { children: React.ReactNode }) => {
     checkUserLoggedIn();
   }, [router]);
 
+  useEffect(() => {
+    getUserInfo()
+      .then((user) => {
+        if (user && user.email) {
+          setLetters(user.email);
+        } else {
+          setLetters("");
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
+
   if (isLoaded) {
     return (
       <div className="flex justify-center items-center h-screen w-screen bg-white">
         <div className="text-center">
           <img
-            src="/vercel.svg"
+            src="/favicon.png"
             alt="logo"
-            className="animate-ping w-10 h-10"
+            className="animate-pulse w-20 h-20"
           />
         </div>
       </div>
@@ -94,7 +138,7 @@ const SideBarLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <>
-      <div>
+      <div className="relative">
         <Transition show={sidebarOpen}>
           <Dialog className="relative z-50 lg:hidden" onClose={setSidebarOpen}>
             <TransitionChild
@@ -145,8 +189,8 @@ const SideBarLayout = ({ children }: { children: React.ReactNode }) => {
                     <div className="flex h-16 shrink-0 items-center">
                       <img
                         className="h-8 w-auto"
-                        src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
-                        alt="Your Company"
+                        src="/logo-white.png"
+                        alt="avenue-immo.fr"
                       />
                     </div>
                     <nav className="flex flex-1 flex-col">
@@ -174,7 +218,7 @@ const SideBarLayout = ({ children }: { children: React.ReactNode }) => {
                             ))}
                           </ul>
                         </li>
-                        <li>
+                        {/* <li>
                           <div className="text-xs font-semibold leading-6 text-gray-400">
                             Your teams
                           </div>
@@ -198,7 +242,7 @@ const SideBarLayout = ({ children }: { children: React.ReactNode }) => {
                               </li>
                             ))}
                           </ul>
-                        </li>
+                        </li> */}
                         <li className="mt-auto">
                           <a
                             href="#"
@@ -228,8 +272,8 @@ const SideBarLayout = ({ children }: { children: React.ReactNode }) => {
             <div className="flex h-16 shrink-0 items-center">
               <img
                 className="h-8 w-auto"
-                src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
-                alt="Your Company"
+                src="/logo-white.png"
+                alt="avenue-immo.fr"
               />
             </div>
             <nav className="flex flex-1 flex-col">
@@ -257,7 +301,7 @@ const SideBarLayout = ({ children }: { children: React.ReactNode }) => {
                     ))}
                   </ul>
                 </li>
-                <li>
+                {/* <li>
                   <div className="text-xs font-semibold leading-6 text-gray-400">
                     Your teams
                   </div>
@@ -281,7 +325,7 @@ const SideBarLayout = ({ children }: { children: React.ReactNode }) => {
                       </li>
                     ))}
                   </ul>
-                </li>
+                </li> */}
                 <li className="mt-auto">
                   <a
                     href="#"
@@ -292,7 +336,7 @@ const SideBarLayout = ({ children }: { children: React.ReactNode }) => {
                       className="h-6 w-6 shrink-0"
                       aria-hidden="true"
                     />
-                    Sign out
+                    Deconnexion
                   </a>
                 </li>
               </ul>
@@ -317,8 +361,8 @@ const SideBarLayout = ({ children }: { children: React.ReactNode }) => {
               aria-hidden="true"
             />
 
-            <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-              <form className="relative flex flex-1" action="#" method="GET">
+            <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6 justify-end">
+              {/* <form className="relative flex flex-1" action="#" method="GET">
                 <label htmlFor="search-field" className="sr-only">
                   Search
                 </label>
@@ -333,38 +377,28 @@ const SideBarLayout = ({ children }: { children: React.ReactNode }) => {
                   type="search"
                   name="search"
                 />
-              </form>
+              </form> */}
               <div className="flex items-center gap-x-4 lg:gap-x-6">
-                <button
+                {/* <button
                   type="button"
                   className="-m-2.5 p-2.5 text-gray-400 hover:text-gray-500"
                 >
                   <span className="sr-only">View notifications</span>
                   <BellIcon className="h-6 w-6" aria-hidden="true" />
-                </button>
+                </button> */}
 
                 {/* Separator */}
-                <div
+                {/* <div
                   className="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-900/10"
                   aria-hidden="true"
-                />
+                /> */}
 
                 {/* Profile dropdown */}
                 <Menu as="div" className="relative">
                   <MenuButton className="-m-1.5 flex items-center p-1.5">
                     <span className="sr-only">Open user menu</span>
-                    <img
-                      className="h-8 w-8 rounded-full bg-gray-50"
-                      src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                      alt=""
-                    />
+                    <div className="text-gray-600">{letters}</div>
                     <span className="hidden lg:flex lg:items-center">
-                      <span
-                        className="ml-4 text-sm font-semibold leading-6 text-gray-900"
-                        aria-hidden="true"
-                      >
-                        Tom Cook
-                      </span>
                       <ChevronDownIcon
                         className="ml-2 h-5 w-5 text-gray-400"
                         aria-hidden="true"
