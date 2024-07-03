@@ -70,7 +70,7 @@ const SideBarLayout = ({ children }: { children: React.ReactNode }) => {
       const loggedIn = await isUserLoggedIn();
       if (!loggedIn) {
         await setIsLoaded(false);
-        router.push("/user/connexion");
+        router.push("/");
       }
       setIsLoaded(false);
     };
