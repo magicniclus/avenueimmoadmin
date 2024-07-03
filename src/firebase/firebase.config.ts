@@ -14,7 +14,7 @@ const firebaseConfig = {
 };
 
 // Vérifier si Firebase a déjà été initialisé
-let app: FirebaseApp; // Typage explicite de `app`
+let app: FirebaseApp;
 if (!getApps().length) {
   app = initializeApp(firebaseConfig);
 } else {
