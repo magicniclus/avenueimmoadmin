@@ -86,7 +86,7 @@ const SideBarLayout = ({ children }: { children: React.ReactNode }) => {
       const loggedIn = await isUserLoggedIn();
       if (!loggedIn) {
         await setIsLoaded(false);
-        router.push("/espace-pro/connexion");
+        router.push("/");
       }
       setIsLoaded(false);
     };
