@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -138,6 +137,7 @@ export function AllDataEstimation() {
     const fetchData = async () => {
       try {
         const result = await getAllData("/estimations");
+        console.log("Fetched data:", result);
 
         const parsedData = Object.keys(result).map((key) => ({
           id: key,
@@ -147,6 +147,7 @@ export function AllDataEstimation() {
         const showAllId = Object.keys(result).map((key) => ({
           id: key,
         }));
+        console.log("Parsed data:", parsedData);
         setAllId(showAllId);
         setData(parsedData);
       } catch (error: any) {
@@ -191,11 +192,7 @@ export function AllDataEstimation() {
   };
 
   const handleRowClick = async (index: number) => {
-    const globalIndex =
-      table.getState().pagination.pageIndex *
-        table.getState().pagination.pageSize +
-      index;
-    setUniqueId(allId[globalIndex].id);
+    setUniqueId(allId[index].id);
   };
 
   useEffect(() => {
@@ -207,7 +204,6 @@ export function AllDataEstimation() {
 
   useEffect(() => {
     if (!drawerOpen) {
-      setUniqueId(null);
       router.push(pathName); // Remove query parameter when drawer is closed
     }
   }, [drawerOpen, pathName, router]);
