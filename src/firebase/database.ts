@@ -25,7 +25,6 @@ export const addData = async (route: string, data: any): Promise<string> => {
 
     // Ajoute la date de création aux données
     const newData = {
-      ...data,
       createdAt,
     };
 
@@ -33,6 +32,46 @@ export const addData = async (route: string, data: any): Promise<string> => {
     return newDataRef.key || ""; // Retourne l'ID des données ajoutées
   } catch (error) {
     console.error("Error adding data:", error);
+    throw error;
+  }
+};
+
+/**
+ * Fonction pour ajouter des données à une route spécifique dans la Firebase Realtime Database avec un ID spécifique.
+ * @param route - La route où les données doivent être ajoutées
+ * @param id - L'ID spécifique à utiliser pour les nouvelles données
+ * @param data - Les données à ajouter
+ * @returns Une promesse résolue si les données ont été ajoutées avec succès
+ */
+export const addDataWithSpecificId = async (
+  route: string,
+  id: any,
+  data: any
+): Promise<void> => {
+  try {
+    const dataRef = ref(database, `${route}/${id}`); // Utilise l'ID spécifique pour la référence
+
+    // Obtient la date et l'heure actuelle en version française
+    const now = new Date();
+    const createdAt = now.toLocaleString("fr-FR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+
+    // Ajoute la date de création aux données
+    const newData = {
+      ...data,
+      createdAt,
+    };
+
+    await set(dataRef, newData); // Ajoute les données à la base de données
+    console.log(`Data added successfully with ID: ${id}`);
+  } catch (error) {
+    console.error("Error adding data with specific ID:", error);
     throw error;
   }
 };
