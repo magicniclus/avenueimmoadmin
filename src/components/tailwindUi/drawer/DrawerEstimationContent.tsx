@@ -1,7 +1,12 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { getAllData, getDataById } from "@/firebase/database";
+import {
+  addData,
+  addDataWithSpecificId,
+  getAllData,
+  getDataById,
+} from "@/firebase/database";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
@@ -85,14 +90,14 @@ const DrawerEstimationContent: React.FC = () => {
     const fetchAgentsData = async () => {
       const agentsData = await fetchAllAgents();
       setAgents(agentsData);
-      console.log("Agents data:", agentsData);
+      // console.log("Agents data:", agentsData);
     };
 
     fetchAgentsData();
   }, []);
 
   if (error) return <div>Erreur: {error}</div>;
-  if (!estimation)
+  if (!estimation || !agents.length)
     return (
       <div className="flex justify-center items-center h-screen w-screen bg-white">
         <div className="text-center">
@@ -160,6 +165,22 @@ const DrawerEstimationContent: React.FC = () => {
           </option>
         )),
     ];
+  };
+
+  const handleAssignAgent = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setPartenaire(e.target.value);
+    console.log("id: ", id);
+    try {
+      await addDataWithSpecificId(
+        `agents/${agents[0].id}/leads`,
+        id,
+        estimation
+      );
+      await addData(`estimations/${id}/agent`, agents[0].id);
+      await addData(`estimations/${id}/assigned`, true);
+    } catch (error) {
+      console.error("Erreur lors de l'attribution de l'estimation:", error);
+    }
   };
 
   return (
@@ -250,7 +271,7 @@ const DrawerEstimationContent: React.FC = () => {
                   name="partenaire"
                   className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   value={partenaire || ""}
-                  onChange={(e) => setPartenaire(e.target.value)}
+                  onChange={handleAssignAgent}
                 >
                   {renderAgentsOptions()}
                 </select>
