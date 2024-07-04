@@ -63,7 +63,7 @@ export const getAllData = async (route: string): Promise<any> => {
     const dataRef = ref(database, route);
     const snapshot = await get(dataRef); // Récupère les données à partir de la base de données
     if (snapshot.exists()) {
-      console.log("Data retrieved successfully:", snapshot.val());
+      // console.log("Data retrieved successfully:", snapshot.val());
       return snapshot.val(); // Retourne les données si elles existent
     } else {
       console.log("No data available at route:", route);
@@ -86,7 +86,7 @@ export const getDataById = async (route: string, id: string): Promise<any> => {
     const dataRef = ref(database, `${route}/${id}`);
     const snapshot = await get(dataRef); // Récupère les données à partir de la base de données
     if (snapshot.exists()) {
-      console.log("Data retrieved successfully:", snapshot.val());
+      // console.log("Data retrieved successfully:", snapshot.val());
       return snapshot.val(); // Retourne les données si elles existent
     } else {
       console.log(`No data available at route: ${route}/${id}`);
