@@ -1,5 +1,7 @@
 "use client";
 import { AllDataEstimation } from "@/components/dataTable.tsx/AllDataEstimation";
+import Drawer from "@/components/tailwindUi/drawer/Drawer";
+import DrawerEstimationContent from "@/components/tailwindUi/drawer/DrawerEstimationContent";
 import SideBarLayout from "@/components/tailwindUi/layout/SideBarLayout";
 import { getAllData } from "@/firebase/database";
 import { get, getDatabase, ref } from "firebase/database";
@@ -11,7 +13,6 @@ export const Page = () => {
       const dbRef = ref(getDatabase(), "/estimations");
       const snapshot = await get(dbRef);
       if (snapshot.exists()) {
-        console.log(snapshot.val());
       } else {
         console.log("No data available");
       }
@@ -27,7 +28,6 @@ export const Page = () => {
     const fetchLeads = async () => {
       try {
         const data = await getAllData("/estimations");
-        console.log("Fetched leads:", data);
         setLeads(data);
       } catch (error) {
         console.error("Error getting leads:", error);
@@ -38,10 +38,15 @@ export const Page = () => {
   }, []);
 
   return (
-    <SideBarLayout>
-      <h1 className="text-2xl font-bold text-gray-900">Leads</h1>
-      <AllDataEstimation />
-    </SideBarLayout>
+    <div className="relative">
+      <Drawer>
+        <DrawerEstimationContent />
+      </Drawer>
+      <SideBarLayout>
+        <h1 className="text-2xl font-bold text-gray-900">Leads</h1>
+        <AllDataEstimation />
+      </SideBarLayout>
+    </div>
   );
 };
 
