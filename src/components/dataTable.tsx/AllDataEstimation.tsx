@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getAllData } from "@/firebase/database";
+import { setDrawerOpen } from "@/redux/drawerSlice";
+import { RootState } from "@/redux/store";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -29,7 +32,9 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { ArrowUpDown, ChevronDown } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 export type Estimation = {
   id: string;
@@ -115,18 +120,34 @@ export const columns: ColumnDef<Estimation>[] = [
 ];
 
 export function AllDataEstimation() {
+  const dispatch = useDispatch();
+
+  const drawerOpen = useSelector(
+    (state: RootState) => state?.drawer?.drawerOpen
+  );
+
   const [data, setData] = useState<Estimation[]>([]);
+  const [allId, setAllId] = useState<{ id: string }[]>([]);
+  const [uniqueId, setUniqueId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const router = useRouter();
+  const pathName = usePathname();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const result = await getAllData("/estimations");
+
         const parsedData = Object.keys(result).map((key) => ({
           id: key,
           assigned: result[key].assigned ?? false, // Valeur par défaut à false si non existant
           ...result[key],
         }));
+        const showAllId = Object.keys(result).map((key) => ({
+          id: key,
+        }));
+        setAllId(showAllId);
         setData(parsedData);
       } catch (error: any) {
         setError(error.message);
@@ -164,6 +185,32 @@ export function AllDataEstimation() {
       rowSelection,
     },
   });
+
+  const setOpen = (value: boolean) => {
+    dispatch(setDrawerOpen(value));
+  };
+
+  const handleRowClick = async (index: number) => {
+    const globalIndex =
+      table.getState().pagination.pageIndex *
+        table.getState().pagination.pageSize +
+      index;
+    setUniqueId(allId[globalIndex].id);
+  };
+
+  useEffect(() => {
+    if (uniqueId) {
+      router.push(`?id=${uniqueId}`);
+      setOpen(true);
+    }
+  }, [uniqueId]);
+
+  useEffect(() => {
+    if (!drawerOpen) {
+      setUniqueId(null);
+      router.push(pathName); // Remove query parameter when drawer is closed
+    }
+  }, [drawerOpen, pathName, router]);
 
   return (
     <div className="w-full">
@@ -224,10 +271,12 @@ export function AllDataEstimation() {
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
+              table.getRowModel().rows.map((row, index) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  onClick={() => handleRowClick(index)} // Pass the correct ID and index here
+                  className="cursor-pointer"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
