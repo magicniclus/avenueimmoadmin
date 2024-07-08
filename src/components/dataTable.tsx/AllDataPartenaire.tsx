@@ -35,43 +35,29 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-export type Estimation = {
+export type Partner = {
   id: string;
-  adresse: string;
-  firstName: string;
-  lastName: string;
+  contrat: string;
   email: string;
-  phone: string;
-  predictedPrice: number;
-  date: string;
-  assigned?: boolean;
+  entreprise: string;
+  nom: string;
+  prenom: string;
+  telephone: string;
 };
 
-export const columns: ColumnDef<Estimation>[] = [
+export const columns: ColumnDef<Partner>[] = [
   {
-    accessorKey: "adresse",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Adresse
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div>{row.getValue("adresse")}</div>,
-  },
-  {
-    accessorKey: "firstName",
-    header: "Prénom",
-    cell: ({ row }) => <div>{row.getValue("firstName")}</div>,
-  },
-  {
-    accessorKey: "lastName",
-    header: "Nom",
-    cell: ({ row }) => <div>{row.getValue("lastName")}</div>,
+    accessorKey: "contrat",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Contrat
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => <div>{row.getValue("contrat")}</div>,
   },
   {
     accessorKey: "email",
@@ -79,42 +65,24 @@ export const columns: ColumnDef<Estimation>[] = [
     cell: ({ row }) => <div>{row.getValue("email")}</div>,
   },
   {
-    accessorKey: "phone",
+    accessorKey: "entreprise",
+    header: "Entreprise",
+    cell: ({ row }) => <div>{row.getValue("entreprise")}</div>,
+  },
+  {
+    accessorKey: "nom",
+    header: "Nom",
+    cell: ({ row }) => <div>{row.getValue("nom")}</div>,
+  },
+  {
+    accessorKey: "prenom",
+    header: "Prénom",
+    cell: ({ row }) => <div>{row.getValue("prenom")}</div>,
+  },
+  {
+    accessorKey: "telephone",
     header: "Téléphone",
-    cell: ({ row }) => <div>{row.getValue("phone")}</div>,
-  },
-  {
-    accessorKey: "predictedPrice",
-    header: () => <div className="text-right">Prix Prévu</div>,
-    cell: ({ row }) => {
-      const predictedPrice = parseFloat(row.getValue("predictedPrice"));
-      const formatted = new Intl.NumberFormat("fr-FR", {
-        style: "currency",
-        currency: "EUR",
-      }).format(predictedPrice);
-
-      return <div className="text-right font-medium">{formatted}</div>;
-    },
-  },
-  {
-    accessorKey: "date",
-    header: "Date",
-    cell: ({ row }) => <div>{row.getValue("date")}</div>,
-  },
-  {
-    accessorKey: "assigned",
-    header: "Attribué",
-    cell: ({ row }) => (
-      <div
-        className={`${
-          row.getValue("assigned")
-            ? "p-1 rounded-lg bg-blue-300 border border-blue-500 flex justify-center"
-            : "p-1 rounded-lg bg-red-300 border border-red-500 flex justify-center"
-        }`}
-      >
-        {row.getValue("assigned") ? "Oui" : "Non"}
-      </div>
-    ),
+    cell: ({ row }) => <div>{row.getValue("telephone")}</div>,
   },
 ];
 
@@ -125,7 +93,7 @@ export function AllDataPartenaire() {
     (state: RootState) => state?.drawer?.drawerOpen
   );
 
-  const [data, setData] = useState<Estimation[]>([]);
+  const [data, setData] = useState<Partner[]>([]);
   const [allId, setAllId] = useState<{ id: string }[]>([]);
   const [uniqueId, setUniqueId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -134,7 +102,7 @@ export function AllDataPartenaire() {
   const pathName = usePathname();
 
   useEffect(() => {
-    const dataRef = ref(database, "/estimations");
+    const dataRef = ref(database, "/agents");
     const unsubscribe = onValue(
       dataRef,
       (snapshot) => {
@@ -142,8 +110,12 @@ export function AllDataPartenaire() {
         if (result) {
           const parsedData = Object.keys(result).map((key) => ({
             id: key,
-            assigned: result[key].assigned ?? false,
-            ...result[key],
+            contrat: result[key].informations.contrat ?? "",
+            email: result[key].informations.email ?? "",
+            entreprise: result[key].informations.entreprise ?? "",
+            nom: result[key].informations.nom ?? "",
+            prenom: result[key].informations.prenom ?? "",
+            telephone: result[key].informations.telephone ?? "",
           }));
           const showAllId = Object.keys(result).map((key) => ({
             id: key,
