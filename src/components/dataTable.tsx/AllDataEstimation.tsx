@@ -1,5 +1,4 @@
-"use client";
-
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -16,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getAllData } from "@/firebase/database";
+import { database } from "@/firebase/firebase.config";
 import { setDrawerOpen } from "@/redux/drawerSlice";
 import { RootState } from "@/redux/store";
 import {
@@ -30,6 +29,7 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { onValue, ref } from "firebase/database";
 import { ArrowUpDown, ChevronDown } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -134,28 +134,33 @@ export function AllDataEstimation() {
   const pathName = usePathname();
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const result = await getAllData("/estimations");
-        console.log("Fetched data:", result);
-
-        const parsedData = Object.keys(result).map((key) => ({
-          id: key,
-          assigned: result[key].assigned ?? false, // Valeur par défaut à false si non existant
-          ...result[key],
-        }));
-        const showAllId = Object.keys(result).map((key) => ({
-          id: key,
-        }));
-        console.log("Parsed data:", parsedData);
-        setAllId(showAllId);
-        setData(parsedData);
-      } catch (error: any) {
+    const dataRef = ref(database, "/estimations");
+    const unsubscribe = onValue(
+      dataRef,
+      (snapshot) => {
+        const result = snapshot.val();
+        if (result) {
+          const parsedData = Object.keys(result).map((key) => ({
+            id: key,
+            assigned: result[key].assigned ?? false,
+            ...result[key],
+          }));
+          const showAllId = Object.keys(result).map((key) => ({
+            id: key,
+          }));
+          setAllId(showAllId);
+          setData(parsedData);
+        } else {
+          setAllId([]);
+          setData([]);
+        }
+      },
+      (error) => {
         setError(error.message);
       }
-    };
+    );
 
-    fetchData();
+    return () => unsubscribe();
   }, []);
 
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -271,7 +276,7 @@ export function AllDataEstimation() {
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  onClick={() => handleRowClick(index)} // Pass the correct ID and index here
+                  onClick={() => handleRowClick(index)}
                   className="cursor-pointer"
                 >
                   {row.getVisibleCells().map((cell) => (
