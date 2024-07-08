@@ -140,17 +140,16 @@ const DrawerPartenaireContent: React.FC = () => {
               Secteur
             </dt>
             <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-              {Array.isArray(agent?.informations?.secteur) &&
-                agent?.informations?.secteur.map((secteur: string) => {
-                  return (
-                    <span
-                      key={secteur}
-                      className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2"
-                    >
-                      {secteur}
-                    </span>
-                  );
-                })}
+              {Object.values(agent?.informations?.secteur || {}).map(
+                (secteur: string, index: number) => (
+                  <span
+                    key={index}
+                    className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2"
+                  >
+                    {secteur}
+                  </span>
+                )
+              )}
             </dd>
           </div>
           <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
