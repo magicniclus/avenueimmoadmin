@@ -25,6 +25,7 @@ export const addData = async (route: string, data: any): Promise<string> => {
 
     // Ajoute la date de création aux données
     const newData = {
+      ...data,
       createdAt,
     };
 
@@ -129,6 +130,52 @@ export const getDataById = async (route: string, id: string): Promise<any> => {
       return snapshot.val(); // Retourne les données si elles existent
     } else {
       console.log(`No data available at route: ${route}/${id}`);
+      return null; // Retourne null si aucune donnée n'existe à cette route
+    }
+  } catch (error) {
+    console.error("Error getting data:", error);
+    throw error; // Relance l'erreur pour être gérée par l'appelant
+  }
+};
+
+/**
+ * Fonction pour récupérer des données spécifiques dans la Firebase Realtime Database en utilisant un chemin et un ID.
+ * @param route - La route de base où les données doivent être récupérées
+ * @param id - L'ID de l'élément à récupérer
+ * @returns Une promesse résolue avec les données récupérées ou une erreur en cas d'échec
+ */
+export const getDataInPartenaireById = async (id: string): Promise<any> => {
+  try {
+    const dataRef = ref(database, `agents/${id}`);
+    const snapshot = await get(dataRef); // Récupère les données à partir de la base de données
+    if (snapshot.exists()) {
+      // console.log("Data retrieved successfully:", snapshot.val());
+      return snapshot.val(); // Retourne les données si elles existent
+    } else {
+      console.log(`No data available at route: agents/${id}/informations`);
+      return null; // Retourne null si aucune donnée n'existe à cette route
+    }
+  } catch (error) {
+    console.error("Error getting data:", error);
+    throw error; // Relance l'erreur pour être gérée par l'appelant
+  }
+};
+
+/**
+ * Fonction pour récupérer des données spécifiques dans la Firebase Realtime Database en utilisant un chemin et un ID.
+ * @param route - La route de base où les données doivent être récupérées
+ * @param id - L'ID de l'élément à récupérer
+ * @returns Une promesse résolue avec les données récupérées ou une erreur en cas d'échec
+ */
+export const getLeadsInPartenaireById = async (id: string): Promise<any> => {
+  try {
+    const dataRef = ref(database, `agents/${id}/leads`);
+    const snapshot = await get(dataRef); // Récupère les données à partir de la base de données
+    if (snapshot.exists()) {
+      // console.log("Data retrieved successfully:", snapshot.val());
+      return snapshot.val(); // Retourne les données si elles existent
+    } else {
+      console.log(`No data available at route: agents/${id}/leads`);
       return null; // Retourne null si aucune donnée n'existe à cette route
     }
   } catch (error) {
