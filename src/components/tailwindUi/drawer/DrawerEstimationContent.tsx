@@ -90,25 +90,32 @@ const DrawerEstimationContent: React.FC = () => {
     const fetchAgentsData = async () => {
       const agentsData = await fetchAllAgents();
       setAgents(agentsData);
-      // console.log("Agents data:", agentsData);
     };
 
     fetchAgentsData();
   }, []);
 
-  if (error) return <div>Erreur: {error}</div>;
-  if (!estimation || !agents.length)
-    return (
-      <div className="flex justify-center items-center h-screen w-screen bg-white">
-        <div className="text-center">
-          <img
-            src="/favicon.png"
-            alt="logo"
-            className="animate-pulse w-20 h-20"
-          />
-        </div>
-      </div>
-    );
+  useEffect(() => {
+    if (!estimation && id) {
+      router.push(pathname); // Remove query parameter when drawer is closed
+    }
+  }, [estimation, id, pathname, router]);
+
+  const handleAssignAgent = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setPartenaire(e.target.value);
+    if (!id || !estimation) return;
+    try {
+      await addDataWithSpecificId(
+        `agents/${e.target.value}/leads`,
+        id,
+        estimation
+      );
+      await addData(`estimations/${id}/agent`, e.target.value);
+      await addData(`estimations/${id}/assigned`, true);
+    } catch (error) {
+      console.error("Erreur lors de l'attribution de l'estimation:", error);
+    }
+  };
 
   const renderAgentsOptions = () => {
     const defaultOption = (
@@ -167,21 +174,19 @@ const DrawerEstimationContent: React.FC = () => {
     ];
   };
 
-  const handleAssignAgent = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setPartenaire(e.target.value);
-    console.log("id: ", id);
-    try {
-      await addDataWithSpecificId(
-        `agents/${agents[0].id}/leads`,
-        id,
-        estimation
-      );
-      await addData(`estimations/${id}/agent`, agents[0].id);
-      await addData(`estimations/${id}/assigned`, true);
-    } catch (error) {
-      console.error("Erreur lors de l'attribution de l'estimation:", error);
-    }
-  };
+  if (error) return <div>Erreur: {error}</div>;
+  if (!estimation || !agents.length)
+    return (
+      <div className="flex justify-center items-center h-screen w-screen bg-white">
+        <div className="text-center">
+          <img
+            src="/favicon.png"
+            alt="logo"
+            className="animate-pulse w-20 h-20"
+          />
+        </div>
+      </div>
+    );
 
   return (
     <div>
