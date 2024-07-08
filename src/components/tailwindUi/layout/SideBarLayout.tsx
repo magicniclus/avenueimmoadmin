@@ -3,6 +3,7 @@
 "use client";
 
 import { getUserInfo, isUserLoggedIn, logOut } from "@/firebase/auth"; // Importez la fonction logOut depuis son chemin
+import { getDataById } from "@/firebase/database";
 import {
   Dialog,
   DialogPanel,
@@ -87,8 +88,34 @@ const SideBarLayout = ({ children }: { children: React.ReactNode }) => {
       if (!loggedIn) {
         await setIsLoaded(false);
         router.push("/");
+      } else {
+        getUserInfo()
+          .then((user) => {
+            getDataById("admins", `${user?.uid}`)
+              .then((data) => {
+                if (
+                  data.role === "admin" ||
+                  data.role === "super-admin" ||
+                  data.role === "editeur"
+                ) {
+                  setIsLoaded(false);
+                  return;
+                } else {
+                  setIsLoaded(false);
+                  router.push("/");
+                  return;
+                }
+              })
+              .catch((error) => {
+                setIsLoaded(false);
+                router.push("/");
+              });
+          })
+          .catch((error) => {
+            setIsLoaded(false);
+            router.push("/");
+          });
       }
-      setIsLoaded(false);
     };
 
     checkUserLoggedIn();
