@@ -31,7 +31,7 @@ import {
 } from "@tanstack/react-table";
 import { onValue, ref } from "firebase/database";
 import { ArrowUpDown, ChevronDown } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -100,6 +100,7 @@ export function AllDataPartenaire() {
 
   const router = useRouter();
   const pathName = usePathname();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const dataRef = ref(database, "/agents");
@@ -168,22 +169,36 @@ export function AllDataPartenaire() {
     dispatch(setDrawerOpen(value));
   };
 
-  const handleRowClick = async (index: number) => {
-    setUniqueId(allId[index].id);
-  };
-
-  useEffect(() => {
-    if (uniqueId) {
-      router.push(`?id=${uniqueId}`);
+  const handleRowClick = (index: number) => {
+    const selectedId = allId[index].id;
+    if (uniqueId === selectedId) {
+      setOpen(false); // Close the drawer before reopening
+      setTimeout(() => {
+        setUniqueId(selectedId);
+        setOpen(true);
+        router.push(`?id=${selectedId}`);
+      }, 300); // Adjust the timeout to match the drawer close animation duration
+    } else {
+      setUniqueId(selectedId);
       setOpen(true);
+      router.push(`?id=${selectedId}`);
     }
-  }, [uniqueId]);
+  };
 
   useEffect(() => {
     if (!drawerOpen) {
       router.push(pathName); // Remove query parameter when drawer is closed
+      setUniqueId(null); // Reset uniqueId when drawer is closed
     }
   }, [drawerOpen, pathName, router]);
+
+  useEffect(() => {
+    const id = searchParams.get("id");
+    if (id) {
+      setUniqueId(id);
+      setOpen(true);
+    }
+  }, [searchParams]);
 
   return (
     <div className="w-full">
