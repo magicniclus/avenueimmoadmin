@@ -91,6 +91,7 @@ const SideBarLayout = ({ children }: { children: React.ReactNode }) => {
       } else {
         getUserInfo()
           .then((user) => {
+            console.log(user?.uid);
             getDataById("admins", `${user?.uid}`)
               .then((data) => {
                 if (
