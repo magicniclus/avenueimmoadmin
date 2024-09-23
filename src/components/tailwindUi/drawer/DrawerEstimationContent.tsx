@@ -1,12 +1,9 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import {
-  addData,
-  addDataWithSpecificId,
-  getAllData,
-  getDataById,
-} from "@/firebase/database";
+import { getAllData, getDataById } from "@/firebase/database";
+import { database } from "@/firebase/firebase.config";
+import { ref, update } from "firebase/database";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
@@ -102,16 +99,33 @@ const DrawerEstimationContent: React.FC = () => {
   }, [estimation, id, pathname, router]);
 
   const handleAssignAgent = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setPartenaire(e.target.value);
+    const selectedAgentId = e.target.value;
+    setPartenaire(selectedAgentId); // Met à jour l'état local avec l'agent sélectionné
+
     if (!id || !estimation) return;
+
     try {
-      await addDataWithSpecificId(
-        `agents/${e.target.value}/leads`,
-        id,
-        estimation
+      console.log(`Attribution du lead ${id} à l'agent ${selectedAgentId}`);
+
+      // Utiliser `update` pour mettre à jour uniquement les chemins spécifiques
+      const updates: { [key: string]: any } = {
+        [`agents/${selectedAgentId}/leads/${id}`]: estimation, // Ajoute le lead à l'agent
+        [`estimations/${id}/agent`]: selectedAgentId, // Met à jour l'agent assigné dans l'estimation
+        [`estimations/${id}/assigned`]: true, // Marque comme attribué
+      };
+
+      // Appliquer toutes les mises à jour dans Firebase en une seule fois
+      await update(ref(database), updates);
+      console.log(
+        `Lead ${id} assigné à l'agent ${selectedAgentId} et mise à jour complète effectuée`
       );
-      await addData(`estimations/${id}/agent`, e.target.value);
-      await addData(`estimations/${id}/assigned`, true);
+
+      // Mise à jour de l'état local
+      setEstimation((prevEstimation) =>
+        prevEstimation
+          ? { ...prevEstimation, assigned: true, partenaire: selectedAgentId }
+          : null
+      );
     } catch (error) {
       console.error("Erreur lors de l'attribution de l'estimation:", error);
     }
@@ -177,12 +191,12 @@ const DrawerEstimationContent: React.FC = () => {
   if (error) return <div>Erreur: {error}</div>;
   if (!estimation || !agents.length)
     return (
-      <div className="flex justify-center items-center h-screen w-screen bg-white">
+      <div className="flex items-center justify-center w-screen h-screen bg-white">
         <div className="text-center">
           <img
             src="/favicon.png"
             alt="logo"
-            className="animate-pulse w-20 h-20"
+            className="w-20 h-20 animate-pulse"
           />
         </div>
       </div>
@@ -194,11 +208,11 @@ const DrawerEstimationContent: React.FC = () => {
         <h3 className="text-base font-semibold leading-7 text-gray-900">
           Informations sur l&apos;estimation
         </h3>
-        <p className="mt-1 max-w-2xl text-sm leading-6 text-gray-500">
+        <p className="max-w-2xl mt-1 text-sm leading-6 text-gray-500">
           Détails personnels et estimation.
         </p>
       </div>
-      <div className="mt-6 border-t border-gray-100 px-4 sm:px-6">
+      <div className="px-4 mt-6 border-t border-gray-100 sm:px-6">
         <dl className="divide-y divide-gray-100">
           <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
             <dt className="text-sm font-medium leading-6 text-gray-900">
