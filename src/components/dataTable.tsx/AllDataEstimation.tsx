@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -27,6 +26,7 @@ import {
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import { onValue, ref } from "firebase/database";
@@ -57,7 +57,7 @@ export const columns: ColumnDef<Estimation>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Adresse
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       );
     },
@@ -93,13 +93,42 @@ export const columns: ColumnDef<Estimation>[] = [
         currency: "EUR",
       }).format(predictedPrice);
 
-      return <div className="text-right font-medium">{formatted}</div>;
+      return <div className="font-medium text-right">{formatted}</div>;
     },
   },
   {
     accessorKey: "date",
-    header: "Date",
-    cell: ({ row }) => <div>{row.getValue("date")}</div>,
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Date
+          <ArrowUpDown className="w-4 h-4 ml-2" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      const dateStr = row.getValue("date");
+      if (typeof dateStr === "string") {
+        const parsedDate = parseCustomDate(dateStr);
+        return <div>{parsedDate.toLocaleString("fr-FR")}</div>;
+      } else {
+        return <div>Format invalide</div>;
+      }
+    },
+    sortingFn: (rowA, rowB, columnId) => {
+      const dateA = rowA.getValue(columnId);
+      const dateB = rowB.getValue(columnId);
+      if (typeof dateA === "string" && typeof dateB === "string") {
+        const parsedDateA = parseCustomDate(dateA);
+        const parsedDateB = parseCustomDate(dateB);
+        return parsedDateB.getTime() - parsedDateA.getTime(); // Tri du plus récent au plus ancien
+      } else {
+        return 0;
+      }
+    },
   },
   {
     accessorKey: "assigned",
@@ -118,13 +147,50 @@ export const columns: ColumnDef<Estimation>[] = [
   },
 ];
 
+// Fonction de parsing pour extraire correctement la date
+function parseCustomDate(dateStr: string): Date {
+  const regex = /(\d{1,2}) (\w+) (\d{4}) à (\d{2}):(\d{2})/;
+  const match = dateStr.match(regex);
+
+  if (match) {
+    const [, day, monthName, year, hours, minutes] = match;
+
+    const monthMap: { [key: string]: number } = {
+      janvier: 0,
+      février: 1,
+      mars: 2,
+      avril: 3,
+      mai: 4,
+      juin: 5,
+      juillet: 6,
+      août: 7,
+      septembre: 8,
+      octobre: 9,
+      novembre: 10,
+      décembre: 11,
+    };
+
+    const month = monthMap[monthName.toLowerCase()];
+
+    if (month !== undefined) {
+      return new Date(
+        Number(year),
+        month,
+        Number(day),
+        Number(hours),
+        Number(minutes)
+      );
+    }
+  }
+
+  return new Date();
+}
+
 export function AllDataEstimation() {
   const dispatch = useDispatch();
-
   const drawerOpen = useSelector(
     (state: RootState) => state?.drawer?.drawerOpen
   );
-
   const [data, setData] = useState<Estimation[]>([]);
   const [allId, setAllId] = useState<{ id: string }[]>([]);
   const [uniqueId, setUniqueId] = useState<string | null>(null);
@@ -145,9 +211,7 @@ export function AllDataEstimation() {
             assigned: result[key].assigned ?? false,
             ...result[key],
           }));
-          const showAllId = Object.keys(result).map((key) => ({
-            id: key,
-          }));
+          const showAllId = Object.keys(result).map((key) => ({ id: key }));
           setAllId(showAllId);
           setData(parsedData);
         } else {
@@ -163,7 +227,13 @@ export function AllDataEstimation() {
     return () => unsubscribe();
   }, []);
 
+  // Tri initial du plus récent au plus ancien (desc = true)
+  useEffect(() => {
+    setSorting([{ id: "date", desc: true }]);
+  }, []);
+
   const [sorting, setSorting] = useState<SortingState>([]);
+
   const [globalFilter, setGlobalFilter] = useState<string>("");
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -172,17 +242,6 @@ export function AllDataEstimation() {
   const table = useReactTable({
     data,
     columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    onGlobalFilterChange: setGlobalFilter,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    globalFilterFn: (row, columnId, filterValue) => {
-      return String(row.getValue(columnId))
-        .toLowerCase()
-        .includes(String(filterValue).toLowerCase());
-    },
     state: {
       sorting,
       globalFilter,
@@ -190,6 +249,11 @@ export function AllDataEstimation() {
       columnVisibility,
       rowSelection,
     },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(), // This line ensures sorting works
   });
 
   const setOpen = (value: boolean) => {
@@ -226,7 +290,7 @@ export function AllDataEstimation() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
-              Colonnes <ChevronDown className="ml-2 h-4 w-4" />
+              Colonnes <ChevronDown className="w-4 h-4 ml-2" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -250,7 +314,7 @@ export function AllDataEstimation() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <div className="rounded-md border">
+      <div className="border rounded-md">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -302,7 +366,7 @@ export function AllDataEstimation() {
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
+      <div className="flex items-center justify-end py-4 space-x-2">
         <div className="space-x-2">
           <Button
             variant="outline"
